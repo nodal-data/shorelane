@@ -12,9 +12,14 @@ dependencies = [
 
 [project.optional-dependencies]
 bigquery = ["google-cloud-bigquery>=3.0", "gcsfs>=2024.0"]
+# boto3 only: the loader stages Parquet to S3 and drives COPY through the
+# Redshift Data API, so it never opens a database connection and needs no
+# driver. dbt does -- that is in the dbt-redshift extra, not here.
+redshift = ["boto3>=1.34"]
 snowflake = ["snowflake-connector-python[pandas]>=3.0"]
 bi = ["plotly>=5.0", "dash>=2.14"]
 dbt = ["dbt-bigquery>=1.7"]
+dbt-redshift = ["dbt-redshift>=1.7"]
 
 [tool.setuptools]
 py-modules = ["config"]

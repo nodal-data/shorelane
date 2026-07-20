@@ -1,6 +1,6 @@
 # Shorelane build pipeline. `make help` for targets.
 
-.PHONY: help install install-bq generate verify load-bq dbt dashboard biz-dashboard validate-dashboard clean
+.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt dashboard biz-dashboard validate-dashboard clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?# .*$$' $(MAKEFILE_LIST) | sort | \
@@ -12,6 +12,9 @@ install: # install core + Plotly BI deps (verify/generate/dashboard run after th
 install-bq: # extra deps for the BigQuery loader + dbt (only needed to load/model)
 	pip install -e ".[bigquery,dbt]"
 
+install-redshift: # extra deps for the Redshift loader
+	pip install -e ".[redshift]"
+
 generate: # generate raw Parquet into data/raw
 	python -m generators.emit
 
@@ -20,6 +23,10 @@ verify: # generate + print the five revenues for the target period
 
 load-bq: # load raw Parquet into BigQuery (set PROJECT=...)
 	python -m loaders.bigquery_load --project $(PROJECT)
+
+load-redshift: # load raw Parquet into Redshift (set BUCKET=... COPY_ROLE_ARN=... [AS_OF=...])
+	python -m loaders.redshift_load --bucket $(BUCKET) --copy-role-arn $(COPY_ROLE_ARN) \
+		$(if $(AS_OF),--as-of $(AS_OF),)
 
 dbt: # run staging + marts (requires ~/.dbt/profiles.yml)
 	cd dbt && dbt run
