@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shorelane Commerce — Office supplies for the way modern teams work</title>
+<meta name="description" content="Shorelane Commerce is a B2B2C office-supplies company. Shop direct, stock your team with net-30 business subscriptions, or sell on the Shorelane marketplace. Founded 2019.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f172a; --slate:#475569; --mute:#64748b; --line:#e2e8f0;
+    --blue:#2563eb; --teal:#0d9488; --amber:#f59e0b; --bg:#f8fafc; --wash:#eff6ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:#fff;line-height:1.55}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+  .btn{display:inline-block;font-weight:600;font-size:15px;padding:11px 20px;border-radius:10px;border:1px solid transparent;cursor:pointer;transition:.15s}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{background:#1d4ed8}
+  .btn-ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .btn-ghost:hover{border-color:#cbd5e1}
+  .btn-light{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35)}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)}
+
+  /* nav */
+  header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .brand .logo{font-size:22px}
+  .nav-links{display:flex;gap:28px;font-size:15px;font-weight:500;color:var(--slate)}
+  .nav-links a:hover{color:var(--ink)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  @media(max-width:860px){.nav-links{display:none}}
+
+  /* hero */
+  .hero{background:radial-gradient(1100px 500px at 75% -10%,#dbeafe 0%,transparent 60%),#fff;padding:84px 0 72px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero h1{font-size:54px;line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:16px 0 18px}
+  .hero h1 .grad{background:linear-gradient(90deg,var(--blue),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p.lead{font-size:19px;color:var(--slate);max-width:540px;margin-bottom:28px}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+  .hero-note{margin-top:18px;font-size:14px;color:var(--mute)}
+  @media(max-width:860px){.hero-grid{grid-template-columns:1fr}.hero h1{font-size:40px}}
+
+  /* hero card */
+  .card-stack{position:relative;background:linear-gradient(160deg,#1e293b,#0f172a);border-radius:20px;padding:26px;color:#fff;box-shadow:0 30px 60px -20px rgba(15,23,42,.45)}
+  .card-stack h4{font-size:14px;color:#94a3b8;font-weight:600;margin-bottom:14px}
+  .chip{display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:13px 15px;margin-bottom:10px}
+  .chip .l{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:500}
+  .chip .ico{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:15px}
+  .chip .price{font-weight:700;font-size:14px}
+  .float-badge{position:absolute;right:-14px;bottom:-14px;background:var(--amber);color:#1a1203;font-weight:700;font-size:13px;padding:9px 14px;border-radius:999px;box-shadow:0 10px 20px -6px rgba(245,158,11,.6)}
+
+  /* trust */
+  .trust{padding:30px 0;border-bottom:1px solid var(--line)}
+  .trust p{text-align:center;font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--mute);margin-bottom:18px}
+  .logos{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:center;font-weight:700;font-size:18px;color:#94a3b8}
+  .logos span{opacity:.85}
+
+  /* sections */
+  section.block{padding:80px 0}
+  .sec-head{text-align:center;max-width:680px;margin:0 auto 48px}
+  .sec-head h2{font-size:36px;letter-spacing:-.02em;font-weight:800;margin:12px 0 12px}
+  .sec-head p{font-size:18px;color:var(--slate)}
+
+  .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  @media(max-width:860px){.pillars{grid-template-columns:1fr}}
+  .pillar{border:1px solid var(--line);border-radius:16px;padding:28px;background:#fff;transition:.18s}
+  .pillar:hover{box-shadow:0 18px 40px -22px rgba(15,23,42,.35);transform:translateY(-2px)}
+  .pillar .badge{width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:22px;margin-bottom:16px}
+  .pillar h3{font-size:21px;font-weight:700;margin-bottom:8px}
+  .pillar p{color:var(--slate);font-size:15px;margin-bottom:16px}
+  .pillar ul{list-style:none;font-size:14px;color:var(--slate)}
+  .pillar li{padding:5px 0 5px 24px;position:relative}
+  .pillar li:before{content:"✓";position:absolute;left:0;color:var(--teal);font-weight:700}
+  .pillar a.more{font-weight:600;font-size:14px;color:var(--blue);margin-top:14px;display:inline-block}
+
+  /* categories */
+  .cats{background:var(--bg)}
+  .cat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
+  @media(max-width:860px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+  .cat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px 14px;text-align:center;font-weight:600;font-size:14px}
+  .cat .ci{font-size:26px;display:block;margin-bottom:10px}
+
+  /* business split */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  @media(max-width:860px){.split{grid-template-columns:1fr;gap:32px}}
+  .split h2{font-size:34px;letter-spacing:-.02em;font-weight:800;margin:12px 0 16px}
+  .feat{display:flex;gap:14px;margin-bottom:18px}
+  .feat .fi{flex:0 0 40px;height:40px;border-radius:10px;background:var(--wash);color:var(--blue);display:grid;place-items:center;font-size:18px}
+  .feat h4{font-size:16px;font-weight:700;margin-bottom:2px}
+  .feat p{font-size:14px;color:var(--slate)}
+  .panel{background:linear-gradient(160deg,#f0fdfa,#eff6ff);border:1px solid var(--line);border-radius:20px;padding:30px}
+  .invoice{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;box-shadow:0 14px 30px -18px rgba(15,23,42,.3)}
+  .invoice .row{display:flex;justify-content:space-between;font-size:14px;padding:9px 0;border-bottom:1px dashed var(--line);color:var(--slate)}
+  .invoice .row.tot{border-bottom:none;font-weight:700;color:var(--ink);font-size:16px;padding-top:14px}
+  .invoice .tag{display:inline-block;font-size:12px;font-weight:700;color:var(--teal);background:#ccfbf1;padding:4px 10px;border-radius:999px;margin-bottom:14px}
+
+  /* marketplace cta */
+  .market{background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;border-radius:24px;padding:54px;display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center}
+  @media(max-width:860px){.market{grid-template-columns:1fr;padding:34px}}
+  .market h2{font-size:32px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+  .market p{color:#cbd5e1;font-size:16px;margin-bottom:22px}
+  .market .take{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px}
+  .market .take .big{font-size:42px;font-weight:800;background:linear-gradient(90deg,#60a5fa,#5eead4);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .market .take .sub{font-size:14px;color:#94a3b8;margin-top:6px}
+
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+  @media(max-width:860px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat .n{font-size:42px;font-weight:800;letter-spacing:-.02em;background:linear-gradient(90deg,var(--blue),var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .l{font-size:14px;color:var(--slate);font-weight:500;margin-top:4px}
+
+  /* testimonials */
+  .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  @media(max-width:860px){.quotes{grid-template-columns:1fr}}
+  .quote{border:1px solid var(--line);border-radius:16px;padding:26px;background:#fff}
+  .quote p{font-size:15px;color:var(--ink);margin-bottom:18px}
+  .who{display:flex;align-items:center;gap:12px}
+  .who .av{width:40px;height:40px;border-radius:50%;background:var(--wash);color:var(--blue);display:grid;place-items:center;font-weight:700}
+  .who .nm{font-weight:700;font-size:14px}
+  .who .rl{font-size:13px;color:var(--mute)}
+
+  /* final cta */
+  .final{background:var(--bg);text-align:center}
+  .final h2{font-size:38px;font-weight:800;letter-spacing:-.02em;margin-bottom:14px}
+  .final p{font-size:18px;color:var(--slate);margin-bottom:26px}
+
+  /* footer */
+  footer{background:#0f172a;color:#cbd5e1;padding:56px 0 30px}
+  .foot-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:32px}
+  @media(max-width:860px){.foot-grid{grid-template-columns:1fr 1fr}}
+  footer .brand{color:#fff;margin-bottom:12px}
+  footer p.desc{font-size:14px;color:#94a3b8;max-width:300px}
+  footer h5{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin-bottom:14px}
+  footer ul{list-style:none;font-size:14px}
+  footer li{padding:6px 0;color:#cbd5e1}
+  footer li a:hover{color:#fff}
+  .foot-bottom{border-top:1px solid #1e293b;margin-top:38px;padding-top:22px;display:flex;justify-content:space-between;font-size:13px;color:#64748b;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand"><span class="logo">🌊</span> Shorelane</div>
+    <nav class="nav-links">
+      <a href="#shop">Shop</a>
+      <a href="#business">For Business</a>
+      <a href="#marketplace">Sell on Shorelane</a>
+      <a href="#about">About</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-ghost" href="#">Sign in</a>
+      <a class="btn btn-primary" href="#business">Get started</a>
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Office supplies · since 2019</span>
+      <h1>Everything your team needs to <span class="grad">get to work.</span></h1>
+      <p class="lead">From a single desk to a thousand. Shop office essentials direct, keep your whole company stocked with net-30 business subscriptions, or sell your own products to thousands of buyers on the Shorelane marketplace.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#business">Stock my team</a>
+        <a class="btn btn-ghost" href="#shop">Shop the catalog</a>
+      </div>
+      <p class="hero-note">Free 2-day delivery on orders over $49 · No contracts · Cancel anytime</p>
+    </div>
+    <div>
+      <div class="card-stack">
+        <h4>YOUR CART · OFFICE RESTOCK</h4>
+        <div class="chip"><div class="l"><span class="ico" style="background:#1e3a8a">📄</span> Premium copy paper, 10 reams</div><span class="price">$62.40</span></div>
+        <div class="chip"><div class="l"><span class="ico" style="background:#134e4a">🖊️</span> Gel pens, 48-pack</div><span class="price">$18.99</span></div>
+        <div class="chip"><div class="l"><span class="ico" style="background:#78350f">🖨️</span> Ink &amp; toner bundle</div><span class="price">$129.00</span></div>
+        <div class="chip"><div class="l"><span class="ico" style="background:#3730a3">☕</span> Breakroom coffee, 3-mo</div><span class="price">$84.00</span></div>
+        <div class="float-badge">Net-30 · auto-replenish</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST -->
+<div class="trust">
+  <div class="wrap">
+    <p>Powering supply closets at 3,800+ teams &amp; shoppers</p>
+    <div class="logos">
+      <span>Harbor &amp; Co.</span><span>NorthBay Legal</span><span>Tidewater Health</span>
+      <span>Beacon Studios</span><span>Cobalt Logistics</span><span>Maple Grove Schools</span>
+    </div>
+  </div>
+</div>
+
+<!-- THREE PILLARS -->
+<section class="block" id="shop">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">One company, three ways to buy &amp; sell</span>
+      <h2>However you work, Shorelane fits.</h2>
+      <p>We started as a direct-to-consumer office shop in 2019. Today we’re the supply backbone for individuals, growing businesses, and the sellers who supply them.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="badge" style="background:#ecfdf5">🛒</div>
+        <h3>Shop direct</h3>
+        <p>The classic Shorelane store. Browse 50,000+ products and check out in minutes — paid up front, shipped fast.</p>
+        <ul>
+          <li>Free 2-day shipping over $49</li>
+          <li>Consumer &amp; small-order friendly</li>
+          <li>30-day hassle-free returns</li>
+        </ul>
+        <a class="more" href="#">Browse the catalog →</a>
+      </div>
+      <div class="pillar">
+        <div class="badge" style="background:#eff6ff">🏢</div>
+        <h3>Shorelane for Business</h3>
+        <p>Subscriptions built for teams: auto-replenishment, net-30 invoicing, and one dashboard for the whole company’s spend.</p>
+        <ul>
+          <li>Net-30 terms, billed up front</li>
+          <li>Annual plans &amp; volume pricing</li>
+          <li>Multi-seat approvals &amp; budgets</li>
+        </ul>
+        <a class="more" href="#business">See business plans →</a>
+      </div>
+      <div class="pillar">
+        <div class="badge" style="background:#fffbeb">🤝</div>
+        <h3>Sell on Shorelane</h3>
+        <p>Our marketplace lets third-party sellers reach our buyers. List your products, we handle checkout &amp; reach — you keep the rest.</p>
+        <ul>
+          <li>Access 3,800+ active buyers</li>
+          <li>Simple per-sale commission</li>
+          <li>Fulfillment &amp; payouts handled</li>
+        </ul>
+        <a class="more" href="#marketplace">Start selling →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="block cats">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">The catalog</span>
+      <h2>Everything for the workspace.</h2>
+    </div>
+    <div class="cat-grid">
+      <div class="cat"><span class="ci">📄</span>Paper &amp; Pads</div>
+      <div class="cat"><span class="ci">🖨️</span>Ink &amp; Toner</div>
+      <div class="cat"><span class="ci">🪑</span>Furniture</div>
+      <div class="cat"><span class="ci">💻</span>Tech &amp; Accessories</div>
+      <div class="cat"><span class="ci">☕</span>Breakroom</div>
+      <div class="cat"><span class="ci">🧴</span>Cleaning</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOR BUSINESS -->
+<section class="block" id="business">
+  <div class="wrap split">
+    <div>
+      <span class="eyebrow">Shorelane for Business</span>
+      <h2>Put your supply closet on autopilot.</h2>
+      <div class="feat">
+        <div class="fi">🔁</div>
+        <div><h4>Auto-replenishment</h4><p>Set the cadence once. Paper, ink, and breakroom staples show up before you run out — across every location.</p></div>
+      </div>
+      <div class="feat">
+        <div class="fi">🧾</div>
+        <div><h4>Net-30 invoicing</h4><p>Order now, pay later. Consolidated monthly invoices on 30-day terms, with PO matching for your finance team.</p></div>
+      </div>
+      <div class="feat">
+        <div class="fi">📊</div>
+        <div><h4>Spend dashboard</h4><p>One view of every team’s orders, budgets, and approvals — so procurement stays in control.</p></div>
+      </div>
+      <a class="btn btn-primary" href="#">Talk to our team</a>
+    </div>
+    <div class="panel">
+      <div class="invoice">
+        <span class="tag">NET-30 · DUE IN 30 DAYS</span>
+        <div class="row"><span>Copy paper subscription (qtrly)</span><span>$748.80</span></div>
+        <div class="row"><span>Ink &amp; toner auto-replenish</span><span>$516.00</span></div>
+        <div class="row"><span>Breakroom plan — 24 seats</span><span>$1,008.00</span></div>
+        <div class="row"><span>Volume discount</span><span>−$212.40</span></div>
+        <div class="row tot"><span>Invoice total</span><span>$2,060.40</span></div>
+      </div>
+      <p style="font-size:13px;color:var(--mute);margin-top:14px;text-align:center">Billed today · Collected on net-30 terms</p>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETPLACE -->
+<section class="block" id="marketplace">
+  <div class="wrap">
+    <div class="market">
+      <div>
+        <span class="eyebrow" style="color:#7dd3fc">Shorelane Marketplace</span>
+        <h2>Your products, in front of buyers who are already shopping for supplies.</h2>
+        <p>Bring your own catalog to Shorelane and sell alongside our own. We bring the buyers, checkout, and fulfillment; you bring the products. You’re paid out on every sale, minus a simple commission — no listing fees, no surprises.</p>
+        <a class="btn btn-light" href="#">Apply to sell</a>
+      </div>
+      <div class="take">
+        <div class="big">15–25%</div>
+        <div class="sub">Per-sale commission, by category. The buyer pays the full retail price; you keep the rest. That’s it.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="block" id="about">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">About Shorelane</span>
+      <h2>Built on the coast, stocking offices everywhere.</h2>
+      <p>Founded in 2019 in Long Beach, California, Shorelane Commerce began as a small direct-to-consumer office shop. We’ve since grown into a B2B2C supplier serving shoppers, businesses, and the third-party sellers on our marketplace.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="n">2019</div><div class="l">Founded</div></div>
+      <div class="stat"><div class="n">3,800+</div><div class="l">Businesses &amp; shoppers served</div></div>
+      <div class="stat"><div class="n">50,000+</div><div class="l">Products in catalog</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Ways to buy &amp; sell</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="block" style="padding-top:0">
+  <div class="wrap">
+    <div class="quotes">
+      <div class="quote">
+        <p>“We stopped thinking about office supplies entirely. Net-30 invoicing fit our finance process, and auto-replenish means the paper just shows up.”</p>
+        <div class="who"><div class="av">JR</div><div><div class="nm">Jordan Reyes</div><div class="rl">Office Manager, NorthBay Legal</div></div></div>
+      </div>
+      <div class="quote">
+        <p>“Listing on the Shorelane marketplace put our notebooks in front of thousands of business buyers we’d never have reached on our own.”</p>
+        <div class="who"><div class="av">MA</div><div><div class="nm">Mei Anand</div><div class="rl">Founder, Beacon Studios</div></div></div>
+      </div>
+      <div class="quote">
+        <p>“One dashboard for every location’s spend. Procurement finally has visibility, and the volume pricing pays for itself.”</p>
+        <div class="who"><div class="av">DT</div><div><div class="nm">Devon Tate</div><div class="rl">VP Operations, Cobalt Logistics</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="block final">
+  <div class="wrap">
+    <h2>Ready to stock up?</h2>
+    <p>Shop direct in minutes, or set your team up with net-30 business plans today.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a class="btn btn-primary" href="#business">Get started</a>
+      <a class="btn btn-ghost" href="#shop">Browse the catalog</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand"><span class="logo">🌊</span> Shorelane</div>
+        <p class="desc">Office supplies for the way modern teams work. Shop direct, subscribe for business, or sell on our marketplace. Founded 2019.</p>
+      </div>
+      <div>
+        <h5>Shop</h5>
+        <ul>
+          <li><a href="#">Paper &amp; pads</a></li>
+          <li><a href="#">Ink &amp; toner</a></li>
+          <li><a href="#">Furniture</a></li>
+          <li><a href="#">Breakroom</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Business</h5>
+        <ul>
+          <li><a href="#business">Subscriptions</a></li>
+          <li><a href="#business">Net-30 terms</a></li>
+          <li><a href="#business">Volume pricing</a></li>
+          <li><a href="#marketplace">Sell on Shorelane</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Company</h5>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Help center</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2019–2025 Shorelane Commerce, Inc. · 1 Harbor Way, Long Beach, CA</span>
+      <span>Privacy · Terms · A fictional company — synthetic data for analytics evaluation.</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

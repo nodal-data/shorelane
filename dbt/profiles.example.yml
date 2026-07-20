@@ -1,0 +1,24 @@
+# Copy to ~/.dbt/profiles.yml and fill in. BigQuery is primary; Snowflake mirrors
+# only the marts for the on-brand / cross-tool demo.
+shorelane:
+  target: bigquery
+  outputs:
+    bigquery:
+      type: bigquery
+      method: oauth        # or service-account; see dbt-bigquery docs
+      project: your-gcp-project
+      dataset: shorelane
+      location: US
+      threads: 4
+      priority: interactive
+
+    snowflake:
+      type: snowflake
+      account: your_account
+      user: your_user
+      authenticator: externalbrowser
+      role: TRANSFORMER
+      database: SHORELANE
+      warehouse: TRANSFORMING
+      schema: MARTS
+      threads: 4

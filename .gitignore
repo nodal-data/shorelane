@@ -1,0 +1,15 @@
+# Generated data — reproducible from seed, never commit.
+data/
+dbt/target/
+dbt/dbt_packages/
+dbt/logs/
+bi/plotly/*.html
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+~/.dbt/
+dbt/bi/
+demo/output/
+.claude/
+.DS_Store

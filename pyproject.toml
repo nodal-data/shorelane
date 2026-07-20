@@ -1,0 +1,21 @@
+[project]
+name = "shorelane"
+version = "2.0.0"
+description = "Shorelane Commerce — a synthetic business for evaluating analytics agents (silent-SQL eval fixture)."
+requires-python = ">=3.10"
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "pyarrow>=14",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+bigquery = ["google-cloud-bigquery>=3.0", "gcsfs>=2024.0"]
+snowflake = ["snowflake-connector-python[pandas]>=3.0"]
+bi = ["plotly>=5.0", "dash>=2.14"]
+dbt = ["dbt-bigquery>=1.7"]
+
+[tool.setuptools]
+py-modules = ["config"]
+packages = ["generators", "loaders"]

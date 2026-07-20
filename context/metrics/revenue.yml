@@ -1,0 +1,76 @@
+# Revenue metric definitions — the disambiguation layer.
+#
+# This is the human-confirmed context that defuses the five-revenues trap. It is
+# the artifact a context layer (e.g. nodal-context) would surface to an analytics
+# agent so it stops guessing which "revenue" column to use.
+#
+# Plug point: when you run the nodal-context interview against Shorelane, its ACF
+# output for the "revenue" concept should reduce to exactly these definitions and
+# this resolution rule. Keep this file and the ACF store in sync.
+
+concept: revenue
+summary: >
+  There is no single "revenue" at Shorelane. Five measures are each individually
+  defensible and routinely conflated. An unqualified request for "revenue" is
+  ambiguous and MUST be disambiguated before answering.
+
+# The canonical default when a stakeholder does not specify (see personas guide).
+canonical_default: recognized_revenue
+
+measures:
+  gmv:
+    label: Gross Merchandise Value
+    grain: app_db__orders.order_date
+    definition: >
+      Full ticket value of everything transacted, INCLUDING the full retail price
+      of marketplace goods (not just Shorelane's take), gross of refunds.
+    owners: [marketing, exec]
+    gotcha: >
+      Inflated by marketplace pass-through. Not a P&L figure. Do not call this
+      "revenue" in a financial context.
+
+  net_revenue:
+    label: Net Revenue
+    grain: app_db__orders.order_date (minus refunds at refund_date)
+    definition: >
+      What Shorelane actually earns: d2c + subscription fees + marketplace TAKE,
+      net of refunds. Excludes marketplace pass-through.
+    owners: [finance, ops]
+    gotcha: >
+      The naive default many people reach for; differs from recognized revenue
+      because subscriptions are billed/earned up front but recognized ratably.
+
+  recognized_revenue:
+    label: Recognized Revenue (GAAP)
+    grain: app_db__revenue_recognition.recognition_date
+    definition: >
+      Net revenue adjusted for revenue recognition: subscription fees recognized
+      ratably across the 12-month term rather than at billing.
+    owners: [finance]
+    gotcha: >
+      In any given period this includes recognition from subscriptions sold in
+      PRIOR periods. For a growing subscription book, recognized revenue can
+      exceed in-period GMV. This is correct, and surprises almost everyone.
+
+  billed_revenue:
+    label: Billed Revenue
+    grain: order_date (non-sub) + app_db__invoices.billed_date (sub)
+    definition: >
+      Total invoiced in the period. Net-30 subscriptions are billed up front, so
+      this counts at billing regardless of whether cash has arrived.
+    owners: [finance, fp&a]
+
+  collected_cash:
+    label: Collected Cash
+    grain: order_date (non-sub) + app_db__invoices.collected_date (sub)
+    definition: >
+      Cash actually received in the period, minus refunds paid out. Net-30 timing
+      shifts subscription cash ~30 days after billing; bad-debt invoices never land.
+    owners: [treasury, ops]
+    gotcha: Always the lowest of the five in a growing book.
+
+resolution_rule: >
+  If the requester's role is known, use the persona mapping in
+  context/guides/personas.md. If unknown, ask which measure they mean before
+  answering; if forced to answer unqualified, return recognized_revenue and state
+  the assumption explicitly alongside the other four for comparison.

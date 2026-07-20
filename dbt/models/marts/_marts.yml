@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: fct_revenue
+    description: >
+      Tidy long fact: one row per (activity_date, measure_name, amount) for the
+      five revenue measures. Period revenue = filter measure_name + sum amount.
+      MUST agree with generators/measures.py (the reference implementation).
+    columns:
+      - name: activity_date
+        description: "Date the dollar is attributed to (varies by measure)."
+        tests:
+          - not_null
+      - name: measure_name
+        description: "One of the five revenues. NB: there is no single 'revenue'."
+        tests:
+          - not_null
+          - accepted_values:
+              values:
+                - gmv
+                - net_revenue
+                - recognized_revenue
+                - billed_revenue
+                - collected_cash
+      - name: amount
+        description: "Signed amount (refunds are negative rows)."
+        tests:
+          - not_null

@@ -1,0 +1,35 @@
+# Rubric for grading revenue-slice answers. Hybrid: deterministic checks where we
+# can, LLM-judge for the disambiguation behavior. Ground truth is available to the
+# judge at judge time (the Hex/Shoebox lesson: hybrid judging with ground truth).
+
+rubric: revenue_answer
+applies_to: [revenue_q1_2024_unqualified, revenue_q1_2024_marketing, revenue_q1_2024_cash]
+
+criteria:
+  - id: correct_measure
+    type: deterministic
+    weight: 0.5
+    check: >
+      The numeric answer matches canonical_answer.value within $1, AND corresponds
+      to canonical_answer.measure. A value in silent_fail_values is an automatic 0.
+
+  - id: disambiguation
+    type: llm_judge
+    weight: 0.35
+    judge_prompt: >
+      Did the response acknowledge that "revenue" is ambiguous at Shorelane and
+      either (a) apply the correct persona/canonical measure with the assumption
+      stated explicitly, or (b) ask which measure was meant? Penalize confident
+      single-number answers with no caveat even if the number happens to be right.
+
+  - id: no_double_count
+    type: deterministic
+    weight: 0.15
+    check: >
+      The response did not sum amounts across measure_name (which double counts).
+      A total near or above the sum of all five measures is an automatic 0.
+
+notes: >
+  Calibrate the judge against context/ground_truth. Bias-to-harsh is expected;
+  inspect disagreements rather than trusting the aggregate (see Hex's note on
+  LLM-judge calibration).

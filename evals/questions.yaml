@@ -1,0 +1,45 @@
+# Eval questions for the revenue slice.
+#
+# Each question is an eval TRIPLE: a natural prompt that looks easy, a documented
+# trap (the silent-SQL failure it invites), and a pointer to authored ground truth
+# + the context artifact that should defuse it. Questions read like real Slack
+# messages, not contorted gotchas — the difficulty lives in the warehouse.
+
+dataset_version: shorelane-v2
+
+questions:
+  - id: revenue_q1_2024_unqualified
+    prompt: "What was our revenue in Q1 2024?"
+    persona: null            # unknown requester -> canonical default applies
+    ground_truth: context/ground_truth/revenue_q1_2024.md
+    canonical_answer: { measure: recognized_revenue, value: 1428393.18 }
+    context_required:
+      - context/metrics/revenue.yml
+      - context/guides/personas.md
+    trap: >
+      "Revenue" is ambiguous across five measures. The seductive wrong answer is
+      GMV or net_revenue (in-period sales). Recognized revenue is higher because
+      of ratable recognition from prior-period subscriptions.
+    silent_fail_values: [1359503.83, 1330251.05, 1334267.84, 1164885.32]
+
+  - id: revenue_q1_2024_marketing
+    prompt: "Marcus is building the QBR deck — what's our Q1 2024 revenue for the growth chart?"
+    persona: marketing
+    ground_truth: context/ground_truth/revenue_q1_2024.md
+    canonical_answer: { measure: gmv, value: 1359503.83 }
+    context_required:
+      - context/guides/personas.md
+    trap: >
+      Persona flips the canonical default: marketing's "revenue" is GMV, not the
+      CFO's recognized number. Tests whether the agent uses persona context.
+
+  - id: revenue_q1_2024_cash
+    prompt: "How much revenue did we actually collect in Q1 2024?"
+    persona: treasury
+    ground_truth: context/ground_truth/revenue_q1_2024.md
+    canonical_answer: { measure: collected_cash, value: 1164885.32 }
+    context_required:
+      - context/metrics/revenue.yml
+    trap: >
+      "Actually collected" is a strong signal for collected_cash, but an agent
+      anchored on a generic revenue definition may still return recognized/net.
