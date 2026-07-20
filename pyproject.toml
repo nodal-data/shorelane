@@ -1,6 +1,10 @@
 [project]
 name = "shorelane"
-version = "2.0.0"
+# Bumping this cuts a git tag on merge to main (.github/workflows/tag-on-version.yml),
+# which is what downstream repos pin. DATASET_VERSION in config.py is separate and
+# tracks the DATA, not the code -- it only moves when SEED or an economic constant
+# changes and ground truth must be re-derived.
+version = "2.1.0"
 description = "Shorelane Commerce — a synthetic business for evaluating analytics agents (silent-SQL eval fixture)."
 requires-python = ">=3.10"
 dependencies = [

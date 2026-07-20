@@ -1,0 +1,81 @@
+name: tag-on-version
+
+# Cuts a git tag from pyproject.toml's version whenever main moves.
+#
+# Downstream repos pin this repo by tag (shorelane-pipeline/requirements.txt and
+# shorelane-dbt/parity/requirements.txt), and both MUST pin the same version --
+# the pipeline loads data with these generators while the parity job evaluates
+# it with this measures.py. Mismatched versions give false parity results.
+#
+# Releasing is therefore just editing `version` in the PR you were already
+# opening, rather than a separate manual step. Tags are IMMUTABLE: this never
+# moves an existing tag, because `pip install ...@v2.0.0` silently returning
+# different code depending on when you ran it is precisely the silent-divergence
+# failure this repo exists to demonstrate.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # tomllib is stdlib from 3.11 only; pin rather than trust the runner image.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Read version from pyproject.toml
+        id: version
+        run: |
+          set -euo pipefail
+          version=$(python -c "
+          import tomllib, pathlib
+          print(tomllib.loads(pathlib.Path('pyproject.toml').read_text())['project']['version'])
+          ")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+          echo "pyproject version: $version"
+
+      - name: Create tag if it does not already exist
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            tagged=$(git rev-list -n1 "$TAG")
+            if [ "$tagged" = "$GITHUB_SHA" ]; then
+              echo "$TAG already points at this commit; nothing to do."
+              exit 0
+            fi
+            # Bump the version in the same PR that changes behaviour. Moving the
+            # tag instead would break every consumer that already resolved it.
+            echo "::error::$TAG already exists and points at $tagged, not $GITHUB_SHA."
+            echo '::error::Bump the version in pyproject.toml rather than moving a published tag.'
+            exit 1
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "created and pushed $TAG"
+
+      - name: Remind that consumers pin this tag
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          echo "::notice::$TAG published. Update the pin in BOTH consumers:"
+          echo "::notice::  shorelane-pipeline/requirements.txt"
+          echo "::notice::  shorelane-dbt/parity/requirements.txt"
+          echo "::notice::Their check-pin workflows will fail until both match."

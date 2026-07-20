@@ -1,0 +1,26 @@
+name: ci
+
+# Guards the property every downstream repo assumes: the generators still
+# produce the numbers committed in context/ground_truth/.
+#
+# Nothing else checks this. shorelane-dbt's weekly parity job compares
+# measures.py against the warehouse, but both sides come from the same shorelane
+# version -- so an RNG perturbation moves them together and parity still passes,
+# agreeing with itself while every published figure quietly goes wrong.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  ground-truth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e .
+      - run: python tests/check_ground_truth.py
