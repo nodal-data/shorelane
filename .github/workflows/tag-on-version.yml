@@ -49,6 +49,11 @@ jobs:
       - name: Create tag if it does not already exist
         env:
           TAG: ${{ steps.version.outputs.tag }}
+          # Exactly what pip installs, per pyproject.toml's
+          # py-modules = ["config"] and packages = ["generators", "loaders"].
+          # Keep this in sync with that list, or a real code change could ship
+          # under an existing tag without anyone noticing.
+          PACKAGE_PATHS: "config.py generators loaders pyproject.toml"
         run: |
           set -euo pipefail
 
@@ -58,10 +63,37 @@ jobs:
               echo "$TAG already points at this commit; nothing to do."
               exit 0
             fi
-            # Bump the version in the same PR that changes behaviour. Moving the
-            # tag instead would break every consumer that already resolved it.
-            echo "::error::$TAG already exists and points at $tagged, not $GITHUB_SHA."
-            echo '::error::Bump the version in pyproject.toml rather than moving a published tag.'
+
+            # The tag exists elsewhere. Whether that is a problem depends
+            # ENTIRELY on whether the installable package changed.
+            #
+            # Consumers pin this repo by tag and install it with pip, so what
+            # they receive is exactly $PACKAGE_PATHS. A commit that touches only
+            # docs, tests or workflows produces a byte-identical install, so
+            # demanding a version bump for it would be noise -- and worse, it
+            # would fail CI on every docs merge until people learned to ignore
+            # a red main.
+            # Split explicitly rather than relying on unquoted word-splitting.
+            # It works in bash, but silently does the wrong thing in zsh (which
+            # does not split) -- there the whole string becomes ONE pathspec,
+            # matches nothing, and every check reports "no packaged changes".
+            read -ra package_paths <<< "$PACKAGE_PATHS"
+
+            if git diff --quiet "$TAG" "$GITHUB_SHA" -- "${package_paths[@]}"; then
+              echo "::notice::$TAG already exists, but no packaged file changed"
+              echo "::notice::since it ($PACKAGE_PATHS). Nothing to release."
+              exit 0
+            fi
+
+            # Packaged code really did change under an already-published tag.
+            # Bump the version in the same PR; moving the tag instead would mean
+            # `pip install ...@$TAG` returns different code depending on when it
+            # ran, which is the silent divergence this fixture exists to expose.
+            echo "::error::$TAG already exists at $tagged, and packaged files have"
+            echo "::error::changed since. Bump the version in pyproject.toml --"
+            echo "::error::never move a published tag."
+            echo "Changed since $TAG:"
+            git diff --stat "$TAG" "$GITHUB_SHA" -- "${package_paths[@]}"
             exit 1
           fi
 
