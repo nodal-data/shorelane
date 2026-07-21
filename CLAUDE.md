@@ -57,17 +57,21 @@ triple. Copy its shape when you add the next piece of debt.
 
 ```
 generators/ (seeded Python)
-      │  emit Parquet
+      │  emit Parquet — or regenerate in memory (--generate), which is
+      │  equivalent because config.SEED pins it
       ▼
-  data/raw/*.parquet  ──(optional)──►  GCS  (canonical artifact store)
-      │                                  │
-      │ loaders/bigquery_load.py         │ loaders/snowflake_load.py (marts only)
-      ▼                                  ▼
-  BigQuery (PRIMARY)                 Snowflake (on-brand + cross-tool demo)
-      │
-      │ dbt: staging → marts
-      ▼
-  fct_revenue  ◄── must match generators/measures.py
+  data/raw/*.parquet ──►  GCS (optional)        S3 (REQUIRED for Redshift)
+      │                    │                      │
+      │ loaders/           │ loaders/             │ COPY ... FORMAT AS PARQUET
+      │ bigquery_load.py   │ bigquery_load.py     ▼
+      ▼                    ▼                   Redshift Serverless (SECOND)
+  BigQuery (PRIMARY) ◄─────┘                      │
+      │                                           │
+      │        dbt: staging → marts (ONE model set, both targets)
+      ▼                                           ▼
+  fct_revenue  ◄── must match generators/measures.py ──►  fct_revenue
+      │                                           │
+      │   parity/check_parity.py          parity/check_parity_redshift.py
       │
       ├── context/  (metrics, LookML, guides, ground_truth)  ← the Nodal layer
       ├── evals/    (questions + rubrics)
@@ -76,10 +80,34 @@ generators/ (seeded Python)
 
 ### Warehouse policy
 - **BigQuery is primary** (cheap on GCS credits; free tier covers this scale).
-- **Snowflake mirrors marts only** — it's the on-brand demo surface and proves
-  Nodal's cross-tool, format-agnostic claim. Do not dual-maintain the full stack.
-- Keep generation warehouse-neutral (Parquet). If you make dbt dual-warehouse, use
-  `dbt_utils` cross-db macros; otherwise keep dbt BigQuery-only for now.
+- **Redshift Serverless is a full second warehouse**, not a mirror. It runs the
+  same generators, the same dbt models and the same parity contract, so the
+  fixture is demonstrably not BigQuery-shaped — and so an AWS-native prospect
+  sees it on the warehouse they actually run. See `shorelane-pipeline/terraform/`.
+- **Snowflake remains a stub.** Redshift now carries the cross-tool claim.
+- Keep generation warehouse-neutral (Parquet, or in-memory via `--generate`).
+- **dbt is dual-warehouse via one model set.** The models are plain ANSI SQL; the
+  only dialect difference is the `money()` macro. There is no portable spelling
+  for a fixed-precision decimal cast, and the two failure modes are opposites:
+
+  | | bare `numeric` | `decimal(38,9)` |
+  |---|---|---|
+  | BigQuery | ✅ *is* decimal(38,9) | ❌ hard error — parameterized types are not allowed in CAST |
+  | Redshift | ⚠️ decimal(18,0) — **silently truncates every cent** | ✅ correct |
+
+  Always use `{{ money('col') }}`. Never write a bare `cast(... as numeric)`.
+
+### Parity is per-warehouse
+`parity/check_parity.py` and `parity/check_parity_redshift.py` both compare
+`fct_revenue` against `measures.py`, and both run weekly. They are separate
+because the warehouses can drift **independently** — the decimal trap above
+would break Redshift while BigQuery stayed green. A pass on one says nothing
+about the other.
+
+`shorelane/tests/check_ground_truth.py` covers the gap neither parity job can:
+both compare the warehouse to `measures.py`, so a change that perturbs the RNG
+moves them together and parity still passes while every committed figure
+silently goes wrong.
 
 ### BI policy — read this to avoid a $60k mistake
 - **Looker (core)** is a $60k+/yr enterprise platform. We do **not** run an instance.
@@ -141,12 +169,38 @@ can drip-feed the warehouse daily while the Parquet stays canonical:
 - `loaders/bigquery_load.py --as-of YYYY-MM-DD|today` loads only visible rows
   (WRITE_TRUNCATE — idempotent; backfill is just a normal run). Omit `--as-of`
   for the full-fixture load.
-- Companion repos: **shorelane-dbt** (the dbt project, daily GitHub Actions run
-  as `sa-dbt-runner`; it is the canonical home of `fct_revenue` and the parity
-  counterpart of `measures.py`) and **shorelane-pipeline** (fake-Fivetran daily
-  loader as `sa-fivetran`, scheduled BigQuery Plotly dashboards as
-  `sa-bi-dashboards`, GCP bootstrap runbook). Both pin this repo's git tag —
-  retag whenever generators/config change.
+- `loaders/redshift_load.py` is the AWS counterpart: same `--as-of`, but
+  `TRUNCATE` + `COPY` from S3 instead. Pass `--generate` where there is no
+  filesystem to read (Lambda) — deterministic generation makes it equivalent.
+- Companion repos: **shorelane-dbt** (the dbt project, canonical home of
+  `fct_revenue` and of both parity checks) and **shorelane-pipeline** (the
+  fake-Fivetran loader, dashboards, and all AWS infrastructure as Terraform).
+  Both pin this repo's git tag — retag whenever generators/config change. A
+  `tag-on-version` workflow cuts the tag from `pyproject.toml` on merge, and
+  each consumer's `check-pin` fails if its pin is not the latest tag.
+
+### The AWS side (Redshift)
+
+Same cadence and the same four identities as GCP, but the runtime is different
+and the reason is worth knowing:
+
+- **The jobs are EventBridge-scheduled Lambdas, not GitHub Actions.** BigQuery is
+  an API endpoint; Redshift is a database in a VPC. GitHub publishes ~5,600 IPv4
+  CIDRs for Actions against a 60-rule security-group limit, so CI cannot be
+  allowlisted against a private workgroup.
+- **Only dbt is VPC-attached.** The loader and dashboards use the Redshift Data
+  API (HTTPS + IAM), which reaches a private workgroup service-side. Only dbt
+  needs a real TCP connection, so only dbt pays for the network hop.
+- **The workgroup is private.** Nothing is publicly reachable. A consequence
+  worth planning around: **dbt cannot be run from a laptop.** The loader,
+  dashboards and parity check can, because they use the Data API.
+- **dbt in Lambda needs a multiprocessing shim** (`handlers/_lambda_mp_patch.py`
+  in shorelane-dbt). Lambda has no `/dev/shm`, so dbt's adapter locks and thread
+  pool cannot create semaphores. It is unsupported and pinned to dbt 1.9; the
+  supported alternative is ECS Fargate with the same image.
+- GitHub Actions still builds and pushes the two container images via OIDC. Note
+  this org uses **immutable OIDC subject claims**
+  (`repo:owner@<id>/repo@<id>:...`), so trust policies must match that format.
 - The local `bi/` dashboards remain the offline fixture (they read local
   Parquet); the scheduled warehouse-querying dashboards live in
   shorelane-pipeline.
@@ -168,8 +222,11 @@ business we fabricated, so nothing is under NDA and everything can be published.
 make verify      # generate + print the five revenues (sanity check)
 make generate    # write data/raw/*.parquet
 make load-bq PROJECT=your-gcp-project
+make load-redshift BUCKET=... COPY_ROLE_ARN=... [AS_OF=YYYY-MM-DD]
 make dbt         # staging + marts (needs ~/.dbt/profiles.yml)
 make dashboard   # free Plotly HTML
+
+python tests/check_ground_truth.py   # committed figures still derive from the generators
 ```
 
 ## Repo map
@@ -182,13 +239,17 @@ generators/               seeded data generation
   measures.py             reference impl of the five measures (CANONICAL)
   emit.py                 → Parquet (+ optional GCS), derive ground truth
 raw_schema/               documented landing schemas
-dbt/                      staging → marts; fct_revenue mirrors measures.py
+dbt/                      local mirror of shorelane-dbt (canonical copy lives there)
+  macros/money.sql        the ONLY dialect difference between the warehouses
 context/                  THE NODAL LAYER
   metrics/                disambiguated metric defs
   semantic/               LookML as context artifact (authored, not rendered)
   guides/                 personas + source-of-truth rules
   ground_truth/           derived answers, keyed to evals
 evals/                    questions.yaml + rubrics/
-loaders/                  bigquery_load.py (primary), snowflake_load.py (marts)
+tests/check_ground_truth.py  guards context/ground_truth/ against RNG drift
+loaders/                  bigquery_load.py (primary), redshift_load.py (second),
+                          visibility.py (arrival rule, warehouse-neutral),
+                          snowflake_load.py (stub)
 bi/                       looker_studio/ (free) + plotly/ (free)
 ```
