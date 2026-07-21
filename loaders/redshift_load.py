@@ -5,6 +5,7 @@ Generate once (generators/emit.py), load many -- the same Parquet BigQuery reads
 so the two warehouses stay byte-identical at the raw layer.
 
     python -m loaders.redshift_load --workgroup shorelane --bucket my-bucket
+    python -m loaders.redshift_load --generate --as-of today   # no data/raw needed
 
 Requires: pip install "shorelane[redshift]"; auth via the usual AWS chain
 (AWS_PROFILE, instance role, or Lambda execution role).
@@ -119,6 +120,12 @@ def main() -> None:
         default=None,
         help='Drip-feed cutoff: YYYY-MM-DD or "today". Omit for the full-fixture load.',
     )
+    ap.add_argument(
+        "--generate",
+        action="store_true",
+        help="Build the dataset in memory instead of reading data/raw. Required "
+             "in Lambda, which has no data directory.",
+    )
     args = ap.parse_args()
 
     if not args.bucket:
@@ -136,17 +143,31 @@ def main() -> None:
 
     as_of = _parse_as_of(args.as_of) if args.as_of else None
 
-    missing = [
-        t for t in RAW_TABLES
-        if not os.path.exists(os.path.join(config.RAW_DIR, f"{t}.parquet"))
-    ]
-    if missing:
-        raise SystemExit(f"No Parquet for {missing}. Run: python -m generators.emit")
+    if args.generate:
+        # No filesystem to read from -- regenerate instead. This is what the
+        # daily Lambda does, and it is exactly what the BigQuery pipeline's
+        # load_daily.py does too. Safe because generation is deterministic:
+        # config.SEED pins it, so the in-memory frames are byte-identical to
+        # data/raw for the same DATASET_VERSION.
+        from generators import orders
 
-    tables = {
-        t: pd.read_parquet(os.path.join(config.RAW_DIR, f"{t}.parquet"))
-        for t in RAW_TABLES
-    }
+        tables = orders.generate()
+    else:
+        missing = [
+            t for t in RAW_TABLES
+            if not os.path.exists(os.path.join(config.RAW_DIR, f"{t}.parquet"))
+        ]
+        if missing:
+            raise SystemExit(
+                f"No Parquet for {missing}. Run `python -m generators.emit`, "
+                "or pass --generate to build the dataset in memory."
+            )
+
+        tables = {
+            t: pd.read_parquet(os.path.join(config.RAW_DIR, f"{t}.parquet"))
+            for t in RAW_TABLES
+        }
+
     if as_of:
         tables = visible_tables(tables, as_of)
 
