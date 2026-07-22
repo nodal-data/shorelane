@@ -87,4 +87,4 @@ we author its LookML as a *context artifact* and render with free tools. Details
 The next pieces of planted data debt (identity fragmentation, an unmerged
 acquisition, a channel rename, a subscription restructure, conflicting ad totals)
 are specified in `CLAUDE.md`. Each is built as an eval triple: ground truth +
-documented trap + resolving context artifact.
+documented trap + resolving context artifact. 
