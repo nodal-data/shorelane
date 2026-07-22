@@ -4,6 +4,10 @@ A synthetic B2B2C business built as an **evaluation fixture for analytics agents
 a controlled environment for measuring **silent SQL** (confidently wrong answers
 from AI-generated queries) and showing that human-confirmed context defuses it.
 
+Built and maintained by **[Nodal](https://nodaldata.io)** as the public companion
+fixture to **[nodal-context](https://github.com/nodal-data/nodal-context)**, the
+open-source interview-built context layer for analytics agents.
+
 This repo ships one complete vertical slice: the **five revenues** trap, where a
 plain "what was our revenue?" has five individually-defensible answers and a naive
 agent picks one with false confidence. See `CLAUDE.md` for the full design contract.
@@ -11,10 +15,12 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
 ## Public demo
 
 - **Fictional company site + live dashboard** — published via GitHub Pages
-  (`.github/workflows/pages.yml`): the marketing homepage at `/`, an
-  explore-the-data page at `/explore.html`, and the five-revenues dashboard at
-  `/dashboard/`, re-rendered daily `--as-of today` so it matches the live
-  warehouse without any credentials in CI.
+  (`.github/workflows/pages.yml`):
+  [the marketing homepage](https://nodal-data.github.io/shorelane/),
+  [an explore-the-data page](https://nodal-data.github.io/shorelane/explore.html),
+  and the [five-revenues dashboard](https://nodal-data.github.io/shorelane/dashboard/),
+  re-rendered daily `--as-of today` so it matches the live warehouse without any
+  credentials in CI.
 - **Public BigQuery datasets** — `nodal-shorelane.shorelane_raw` (landing tables)
   and `nodal-shorelane.shorelane` (dbt marts incl. `fct_revenue`) are readable by
   any authenticated Google account. Query from your own GCP project; the free
@@ -60,16 +66,19 @@ If your numbers differ, the seed/economics changed — see "breaking changes" in
 ## What's here
 
 - `generators/` — seeded, deterministic data generation
-- `dbt/` — staging + `fct_revenue` mart (BigQuery primary)
+- `dbt/` — staging + `fct_revenue` mart, one model set for both warehouses
 - `context/` — the Nodal layer: metric defs, LookML, personas, derived ground truth
 - `evals/` — questions + grading rubric for the revenue slice
-- `loaders/` — BigQuery (primary) + Snowflake (marts mirror)
+- `loaders/` — BigQuery (primary, public), Redshift (private second warehouse),
+  Snowflake (stub); `visibility.py` holds the warehouse-neutral arrival rule
 - `bi/` — Looker Studio (free, BQ-native) + Plotly (fully free)
+- `site/` — the explore page for the public GitHub Pages site
 
-## Why BigQuery + (optional) Snowflake, and why not Looker
+## Two warehouses, and why not Looker
 
-BigQuery is primary (cheap on GCS credits). Snowflake mirrors only the marts for an
-on-brand, cross-tool demo. **Looker (core)** is a $60k+/yr platform we don't run —
+BigQuery is primary and public. Redshift Serverless runs the same generators, dbt
+models and parity contract as a full private second warehouse, proving the fixture
+isn't BigQuery-shaped. **Looker (core)** is a $60k+/yr platform we don't run —
 we author its LookML as a *context artifact* and render with free tools. Details in
 `CLAUDE.md`.
 
