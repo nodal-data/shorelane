@@ -1,6 +1,6 @@
 # Shorelane build pipeline. `make help` for targets.
 
-.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt dashboard biz-dashboard validate-dashboard clean
+.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt dashboard site biz-dashboard validate-dashboard clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?# .*$$' $(MAKEFILE_LIST) | sort | \
@@ -34,6 +34,12 @@ dbt: # run staging + marts (requires ~/.dbt/profiles.yml)
 dashboard: # render the free static Plotly dashboard (five revenues)
 	python -m bi.plotly.revenue_dashboard
 
+site: # assemble the public GitHub Pages site into _site/ (same steps as pages.yml)
+	mkdir -p _site/dashboard
+	cp context/website/index.html _site/index.html
+	cp site/explore.html _site/explore.html
+	python -m bi.plotly.revenue_dashboard --as-of today --out _site/dashboard/index.html
+
 biz-dashboard: # launch the interactive exec dashboard at localhost:8050
 	python -m bi.plotly.business_dashboard
 
@@ -41,4 +47,4 @@ validate-dashboard: # print the source-of-truth KPIs to validate against
 	python -m bi.dashboard_data
 
 clean: # remove generated artifacts
-	rm -rf data/raw/*.parquet dbt/target bi/plotly/*.html
+	rm -rf data/raw/*.parquet dbt/target bi/plotly/*.html _site

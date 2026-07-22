@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explore the Shorelane data — a public analytics eval fixture</title>
+<meta name="description" content="Shorelane Commerce is a fictional company with a real, public BigQuery warehouse. Query it, run the dbt project, and try building an analytics context layer against it.">
+<style>
+  :root{--ink:#0f172a;--slate:#475569;--mute:#64748b;--line:#e2e8f0;--blue:#2563eb;--teal:#0d9488;--bg:#f8fafc;--wash:#eff6ff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,sans-serif;color:var(--ink);background:#fff;line-height:1.6}
+  a{color:var(--blue);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px}
+  header{border-bottom:1px solid var(--line);background:var(--bg)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{font-weight:800;font-size:19px;letter-spacing:-.02em;color:var(--ink)}
+  .nav a.back{font-size:14px;font-weight:600}
+  main{padding:56px 0 80px}
+  h1{font-size:38px;letter-spacing:-.02em;font-weight:800;margin:10px 0 14px}
+  .eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--blue)}
+  p.lead{font-size:18px;color:var(--slate);margin-bottom:34px}
+  h2{font-size:24px;font-weight:700;margin:42px 0 10px;letter-spacing:-.01em}
+  p{color:var(--slate);font-size:15px;margin-bottom:12px}
+  pre{background:#0f172a;color:#e2e8f0;border-radius:12px;padding:18px;font-size:13px;overflow-x:auto;margin:14px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  p code,li code{background:var(--wash);color:var(--ink);padding:1px 6px;border-radius:6px;font-size:13px}
+  ul{margin:0 0 12px 22px;color:var(--slate);font-size:15px}
+  li{margin:6px 0}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0}
+  @media(max-width:700px){.cards{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line);border-radius:14px;padding:20px;background:#fff}
+  .card h3{font-size:16px;font-weight:700;margin-bottom:6px}
+  .card p{font-size:14px;margin-bottom:10px}
+  .card a{font-weight:600;font-size:14px}
+  .note{background:var(--wash);border:1px solid #dbeafe;border-radius:12px;padding:16px 18px;font-size:14px;color:var(--slate);margin:22px 0}
+  footer{border-top:1px solid var(--line);padding:26px 0;font-size:13px;color:var(--mute)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="./">🌊 Shorelane</a>
+    <a class="back" href="./">← back to the (fictional) company site</a>
+  </div>
+</header>
+
+<main>
+<div class="wrap">
+  <span class="eyebrow">Behind the curtain</span>
+  <h1>A fictional company with a real, public warehouse.</h1>
+  <p class="lead">Shorelane Commerce is a synthetic B2B2C office-supplies business built as an
+  <strong>evaluation fixture for analytics agents</strong>. The data is seeded and deterministic,
+  the warehouse is live and public, and the traps are planted on purpose: a plain
+  "what was our revenue?" has five individually-defensible answers, and a naive AI agent
+  picks one with false confidence. Everything here exists to show that
+  <strong>human-confirmed context defuses silent SQL</strong> — confidently wrong,
+  plausible-looking answers.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>📊 Live dashboard</h3>
+      <p>The five revenues, monthly, rebuilt daily in lockstep with the warehouse. They never agree — that's the point.</p>
+      <a href="dashboard/">Open the dashboard →</a>
+    </div>
+    <div class="card">
+      <h3>🗄️ Public BigQuery dataset</h3>
+      <p>Raw landing tables plus the <code>fct_revenue</code> mart, queryable from any Google account's own project.</p>
+      <a href="https://console.cloud.google.com/bigquery?p=nodal-shorelane&amp;d=shorelane&amp;page=dataset" rel="noopener">Open in BigQuery →</a>
+    </div>
+    <div class="card">
+      <h3>🧬 Source &amp; dbt project</h3>
+      <p>Seeded generators, dbt models, metric definitions, personas, and the derived ground truth — all open source.</p>
+      <a href="https://github.com/nodal-data/shorelane" rel="noopener">github.com/nodal-data/shorelane →</a>
+    </div>
+    <div class="card">
+      <h3>🧠 Build the context layer</h3>
+      <p>Run the nodal-context interview against this warehouse and watch the traps get defused.</p>
+      <a href="https://github.com/nodal-data/nodal-context" rel="noopener">github.com/nodal-data/nodal-context →</a>
+    </div>
+  </div>
+
+  <h2>Query it right now</h2>
+  <p>The datasets <code>nodal-shorelane.shorelane_raw</code> (landing tables) and
+  <code>nodal-shorelane.shorelane</code> (dbt marts) are shared with all authenticated
+  Google users. Run this from your own GCP project (the free tier covers it many times over):</p>
+  <pre><code>SELECT measure_name, ROUND(SUM(amount), 2) AS amount
+FROM `nodal-shorelane.shorelane.fct_revenue`
+WHERE activity_date BETWEEN '2024-01-01' AND '2024-03-31'
+GROUP BY measure_name
+ORDER BY measure_name;</code></pre>
+  <p>You'll get five different "revenues" for the same quarter. Which one is <em>the</em> revenue?
+  That depends on who's asking — which is exactly the ambiguity the
+  <a href="https://github.com/nodal-data/shorelane/tree/main/context">context layer</a> resolves.</p>
+
+  <h2>The trap, in one sentence</h2>
+  <p>Net-30 subscriptions are <em>billed up front</em> but <em>recognized ratably</em>, refunds
+  land in a different table than orders, and the marketplace take means gross ≠ net — so
+  <code>gmv</code>, <code>net_revenue</code>, <code>recognized_revenue</code>,
+  <code>billed_revenue</code>, and <code>collected_cash</code> diverge every period, and
+  recognized revenue can exceed GMV.</p>
+
+  <h2>Try the full demo</h2>
+  <ul>
+    <li>Point a <a href="https://cloud.google.com/bigquery/docs/pre-built-tools#mcp" rel="noopener">BigQuery MCP server</a> (using your own project for billing) at the public dataset.</li>
+    <li>Ask an AI agent a deceptively easy question — <em>"What was revenue in Q1 2024?"</em> — and note the confident answer.</li>
+    <li>Run the <a href="https://github.com/nodal-data/nodal-context" rel="noopener">nodal-context</a> ~30-minute test-drive interview against the same warehouse (the open-source <a href="https://github.com/nodal-data/shorelane/tree/main/dbt" rel="noopener">dbt project</a> is one of its inputs).</li>
+    <li>Ask again with the confirmed context loaded, and compare against the committed <a href="https://github.com/nodal-data/shorelane/tree/main/context/ground_truth" rel="noopener">ground truth</a>.</li>
+  </ul>
+
+  <div class="note">
+    Everything here is fictional and synthetic — generated from a pinned seed, published
+    deliberately, nothing under NDA. The dashboard above is rebuilt daily from the same seed
+    with an as-of filter, so it provably matches what the live warehouse sees.
+    Built by <a href="https://nodaldata.io" rel="noopener">Nodal</a>.
+  </div>
+</div>
+</main>
+
+<footer>
+  <div class="wrap">© Shorelane Commerce — a fictional company · synthetic data for analytics evaluation · <a href="https://github.com/nodal-data/shorelane">source</a></div>
+</footer>
+
+</body>
+</html>
