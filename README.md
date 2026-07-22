@@ -8,6 +8,35 @@ This repo ships one complete vertical slice: the **five revenues** trap, where a
 plain "what was our revenue?" has five individually-defensible answers and a naive
 agent picks one with false confidence. See `CLAUDE.md` for the full design contract.
 
+## Public demo
+
+- **Fictional company site + live dashboard** — published via GitHub Pages
+  (`.github/workflows/pages.yml`): the marketing homepage at `/`, an
+  explore-the-data page at `/explore.html`, and the five-revenues dashboard at
+  `/dashboard/`, re-rendered daily `--as-of today` so it matches the live
+  warehouse without any credentials in CI.
+- **Public BigQuery datasets** — `nodal-shorelane.shorelane_raw` (landing tables)
+  and `nodal-shorelane.shorelane` (dbt marts incl. `fct_revenue`) are readable by
+  any authenticated Google account. Query from your own GCP project; the free
+  tier covers this dataset thousands of times over.
+
+## Try it yourself (the silent-SQL demo)
+
+1. **Connect an agent to the warehouse.** Point a
+   [BigQuery MCP server](https://cloud.google.com/bigquery/docs/pre-built-tools#mcp)
+   at your own GCP project (that's where query billing lands — free tier is
+   plenty) and query the public `nodal-shorelane` datasets.
+2. **Ask the deceptively easy question.** *"What was revenue in Q1 2024?"* —
+   note the confident answer and which of the five measures it silently picked.
+   The seductive wrong answers are documented per-question in `evals/questions.yaml`.
+3. **Build the context.** Run the
+   [nodal-context](https://github.com/nodal-data/nodal-context) ~30-minute
+   test-drive interview against the same warehouse. This repo's `dbt/` folder is
+   a ready-made dbt extraction input. (Query-history mining needs project-level
+   permissions, so that input isn't available on the public dataset — expected.)
+4. **Ask again with context loaded** and check the answer against
+   `context/ground_truth/`. The correct Q1 2024 canonical answer is below.
+
 ## Quickstart
 
 ```bash

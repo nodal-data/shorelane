@@ -208,6 +208,23 @@ and the reason is worth knowing:
   `--anchor` in `bi/dashboard_data.py`) so they stay valid on the live
   warehouse.
 
+## Public demo surface
+
+The repo is public and doubles as live marketing material:
+
+- **GitHub Pages** (`.github/workflows/pages.yml`, `make site`): the fictional
+  homepage (`context/website/index.html`) at `/`, `site/explore.html` at
+  `/explore.html`, and the five-revenues dashboard at `/dashboard/` rendered
+  `--as-of today`. A daily 08:00 UTC cron re-renders it; by the parity property
+  the deterministic as-of render equals the live warehouse, so **no warehouse
+  credential ever enters this repo's CI**. Keep it that way.
+- **Public BigQuery datasets**: `shorelane_raw` and `shorelane` in project
+  `nodal-shorelane` are shared with `allAuthenticatedUsers` as viewers. Visitors
+  query from their own GCP project. Redshift stays private (the workgroup has no
+  public path by design); Snowflake stays a stub.
+- Consequence: ground truth is web-discoverable, so Shorelane is a *demo*, not a
+  blind benchmark. Don't use it to score models that can search the web.
+
 ## Nodal integration (the payoff)
 
 Run the `nodal-context` interview against this warehouse; its ACF output for each
@@ -252,4 +269,6 @@ loaders/                  bigquery_load.py (primary), redshift_load.py (second),
                           visibility.py (arrival rule, warehouse-neutral),
                           snowflake_load.py (stub)
 bi/                       looker_studio/ (free) + plotly/ (free)
+site/                     explore.html — the public Pages site's meta page
+                          (the fictional homepage stays in context/website/)
 ```
