@@ -1,0 +1,78 @@
+version: 2
+
+# Grain and referential integrity for the staging layer. These run nightly via
+# `dbt build` against BOTH warehouses, and they are safe on the drip-fed live
+# warehouse at any as-of: every child row's arrival date (billed/refund/
+# recognition) is >= its parent order's order_date, so a visible child always
+# has a visible parent (verified against the generators).
+#
+# They also serve as machine-readable grain evidence for context tools that
+# mine the manifest (e.g. nodal-context's dbt_extract.py).
+
+models:
+  - name: stg_orders
+    description: >
+      One row per order, all channels (d2c, business_subscription, marketplace).
+      Carries the gross-vs-net wedge: gross_amount is the full ticket,
+      net_amount is what Shorelane earns (marketplace -> take only).
+    columns:
+      - name: order_id
+        description: "Natural key."
+        tests:
+          - unique
+          - not_null
+
+  - name: stg_invoices
+    description: >
+      One row per business-subscription invoice. Net-30: billed up front,
+      collected later. collected_date is NULL while pending or for bad debt
+      (is_bad_debt disambiguates).
+    columns:
+      - name: invoice_id
+        description: "Natural key."
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: "The subscription order this invoice bills."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+  - name: stg_refunds
+    description: >
+      One row per refund, lagged after the original order. Negative rows for
+      net_revenue and collected_cash — the table naive revenue queries forget.
+    columns:
+      - name: refund_id
+        description: "Natural key."
+        tests:
+          - unique
+          - not_null
+      - name: order_id
+        description: "The refunded order."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+
+  - name: stg_revenue_recognition
+    description: >
+      Ratable recognition schedule: one row per (order_id, recognition_date).
+      Subscriptions spread over the term; d2c/marketplace recognize immediately.
+      The reason recognized_revenue can exceed GMV in a period.
+    columns:
+      - name: order_id
+        description: "Order the recognized dollars belong to."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_orders')
+              field: order_id
+      - name: recognition_date
+        description: "Date the dollars are recognized (grain with order_id)."
+        tests:
+          - not_null

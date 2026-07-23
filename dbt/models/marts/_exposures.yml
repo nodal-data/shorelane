@@ -1,0 +1,34 @@
+version: 2
+
+# Downstream consumers of fct_revenue, declared so lineage tools and manifest
+# miners (nodal-context dbt_extract.py) can see where the mart actually lands.
+
+exposures:
+  - name: five_revenues_public_dashboard
+    label: "Five revenues — public demo dashboard"
+    type: dashboard
+    url: https://nodal-data.github.io/shorelane/dashboard/
+    maturity: high
+    description: >
+      Public Plotly dashboard on the Shorelane demo site, re-rendered daily
+      as-of today. It is the deterministic twin of fct_revenue: by the parity
+      property, the seeded generators filtered by the arrival rule produce
+      exactly what this mart holds, with no warehouse credentials in CI.
+    depends_on:
+      - ref('fct_revenue')
+    owner:
+      name: Ron Potok
+
+  - name: business_dashboard_scheduled
+    label: "Executive business dashboard (scheduled BI job)"
+    type: dashboard
+    maturity: medium
+    description: >
+      Daily scheduled dashboards in shorelane-pipeline (BigQuery via GitHub
+      Actions, Redshift via Lambda) that query fct_revenue directly as the
+      bi_dashboards identity — the labeled "BI service" traffic in query
+      history.
+    depends_on:
+      - ref('fct_revenue')
+    owner:
+      name: Ron Potok
