@@ -1,0 +1,22 @@
+# Parse-only profile: lets anyone run `dbt parse` (and nothing else) with ZERO
+# credentials — parse never opens a connection. Used by `make manifest` and the
+# Pages build to produce target/manifest.json for context tools (e.g.
+# nodal-context's dbt_extract.py, which prefers a manifest over raw sources).
+#
+# The project id is real on purpose: it is baked into the manifest's relation
+# names, and it must match the public warehouse (`nodal-shorelane`) so extracted
+# table names resolve. It grants nothing — the datasets are public read anyway.
+#
+# For actual runs against a warehouse, copy profiles.example.yml to
+# ~/.dbt/profiles.yml instead.
+shorelane:
+  target: bigquery
+  outputs:
+    bigquery:
+      type: bigquery
+      method: oauth
+      project: nodal-shorelane
+      dataset: shorelane
+      location: US
+      threads: 4
+      priority: interactive

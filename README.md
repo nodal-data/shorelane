@@ -38,7 +38,10 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
 3. **Build the context.** Run the
    [nodal-context](https://github.com/nodal-data/nodal-context) ~30-minute
    test-drive interview against the same warehouse. This repo's `dbt/` folder is
-   a ready-made dbt extraction input. (Query-history mining needs project-level
+   a ready-made dbt extraction input: fetch the pre-parsed
+   [manifest.json](https://nodal-data.github.io/shorelane/dbt/manifest.json)
+   from the demo site, or build it yourself with `make manifest` — `dbt parse`
+   needs no warehouse credentials. (Query-history mining needs project-level
    permissions, so that input isn't available on the public dataset — expected.)
 4. **Ask again with context loaded** and check the answer against
    `context/ground_truth/`. The correct Q1 2024 canonical answer is below.
