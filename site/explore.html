@@ -105,7 +105,7 @@ ORDER BY measure_name;</code></pre>
   <ul>
     <li>Point a <a href="https://cloud.google.com/bigquery/docs/pre-built-tools#mcp" rel="noopener">BigQuery MCP server</a> (using your own project for billing) at the public dataset.</li>
     <li>Ask an AI agent a deceptively easy question — <em>"What was revenue in Q1 2024?"</em> — and note the confident answer.</li>
-    <li>Run the <a href="https://github.com/nodal-data/nodal-context" rel="noopener">nodal-context</a> ~30-minute test-drive interview against the same warehouse (the open-source <a href="https://github.com/nodal-data/shorelane/tree/main/dbt" rel="noopener">dbt project</a> is one of its inputs).</li>
+    <li>Run the <a href="https://github.com/nodal-data/nodal-context" rel="noopener">nodal-context</a> ~30-minute test-drive interview against the same warehouse (the open-source <a href="https://github.com/nodal-data/shorelane/tree/main/dbt" rel="noopener">dbt project</a> is one of its inputs — a pre-parsed <a href="dbt/manifest.json">manifest.json</a> is published here, so you don't need dbt installed).</li>
     <li>Ask again with the confirmed context loaded, and compare against the committed <a href="https://github.com/nodal-data/shorelane/tree/main/context/ground_truth" rel="noopener">ground truth</a>.</li>
   </ul>
 

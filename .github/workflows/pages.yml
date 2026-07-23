@@ -4,6 +4,8 @@ name: pages
 #   /            the fictional Shorelane marketing site (context artifact)
 #   /explore.html what-this-really-is page (public dataset, repo, nodal-context)
 #   /dashboard/  five-revenues Plotly dashboard, rendered --as-of today
+#   /dbt/manifest.json  parsed dbt manifest for context tools (no dbt install
+#                       needed to consume it; `dbt parse` needs no credentials)
 #
 # The daily cron keeps the dashboard in lockstep with the live warehouse without
 # any warehouse credentials: deterministic generation + the arrival rule in
@@ -37,13 +39,15 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: pip install -e ".[bi]"
+      - run: pip install -e ".[bi,dbt]"
       - name: Assemble site
         run: |
-          mkdir -p _site/dashboard
+          mkdir -p _site/dashboard _site/dbt
           cp context/website/index.html _site/index.html
           cp site/explore.html _site/explore.html
           python -m bi.plotly.revenue_dashboard --as-of today --out _site/dashboard/index.html
+          make manifest
+          cp dbt/target/manifest.json _site/dbt/manifest.json
       - uses: actions/configure-pages@v5
         with:
           enablement: true

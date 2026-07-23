@@ -1,6 +1,6 @@
 # Shorelane build pipeline. `make help` for targets.
 
-.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt dashboard site biz-dashboard validate-dashboard clean
+.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt manifest dashboard site biz-dashboard validate-dashboard clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?# .*$$' $(MAKEFILE_LIST) | sort | \
@@ -31,14 +31,19 @@ load-redshift: # load raw Parquet into Redshift (set BUCKET=... COPY_ROLE_ARN=..
 dbt: # run staging + marts (requires ~/.dbt/profiles.yml)
 	cd dbt && dbt run
 
+manifest: # build dbt/target/manifest.json with zero credentials (dbt parse only)
+	cd dbt && dbt parse --profiles-dir profiles.parse
+
 dashboard: # render the free static Plotly dashboard (five revenues)
 	python -m bi.plotly.revenue_dashboard
 
 site: # assemble the public GitHub Pages site into _site/ (same steps as pages.yml)
-	mkdir -p _site/dashboard
+	mkdir -p _site/dashboard _site/dbt
 	cp context/website/index.html _site/index.html
 	cp site/explore.html _site/explore.html
 	python -m bi.plotly.revenue_dashboard --as-of today --out _site/dashboard/index.html
+	$(MAKE) manifest
+	cp dbt/target/manifest.json _site/dbt/manifest.json
 
 biz-dashboard: # launch the interactive exec dashboard at localhost:8050
 	python -m bi.plotly.business_dashboard

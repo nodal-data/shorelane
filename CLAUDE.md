@@ -214,10 +214,14 @@ The repo is public and doubles as live marketing material:
 
 - **GitHub Pages** (`.github/workflows/pages.yml`, `make site`): the fictional
   homepage (`context/website/index.html`) at `/`, `site/explore.html` at
-  `/explore.html`, and the five-revenues dashboard at `/dashboard/` rendered
-  `--as-of today`. A daily 08:00 UTC cron re-renders it; by the parity property
+  `/explore.html`, the five-revenues dashboard at `/dashboard/` rendered
+  `--as-of today`, and the parsed dbt manifest at `/dbt/manifest.json`
+  (`make manifest` — `dbt parse` against the credential-free
+  `dbt/profiles.parse/`, so context tools get the rich extraction input without
+  a dbt install). A daily 08:00 UTC cron re-renders it; by the parity property
   the deterministic as-of render equals the live warehouse, so **no warehouse
-  credential ever enters this repo's CI**. Keep it that way.
+  credential ever enters this repo's CI**. Keep it that way. The manifest is a
+  derived artifact like the Parquet: published, never committed.
 - **Public BigQuery datasets**: `shorelane_raw` and `shorelane` in project
   `nodal-shorelane` are shared with `allAuthenticatedUsers` as viewers. Visitors
   query from their own GCP project. Redshift stays private (the workgroup has no
