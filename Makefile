@@ -1,6 +1,6 @@
 # Shorelane build pipeline. `make help` for targets.
 
-.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt manifest dashboard site biz-dashboard validate-dashboard clean
+.PHONY: help install install-bq install-redshift generate verify load-bq load-redshift dbt manifest manifest-fetch dashboard site biz-dashboard validate-dashboard clean
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?# .*$$' $(MAKEFILE_LIST) | sort | \
@@ -33,6 +33,10 @@ dbt: # run staging + marts (requires ~/.dbt/profiles.yml)
 
 manifest: # build dbt/target/manifest.json with zero credentials (dbt parse only)
 	cd dbt && dbt parse --profiles-dir profiles.parse
+
+manifest-fetch: # fetch the published manifest.json (no dbt install needed)
+	mkdir -p dbt/target
+	curl -sf -o dbt/target/manifest.json https://nodal-data.github.io/shorelane/dbt/manifest.json
 
 dashboard: # render the free static Plotly dashboard (five revenues)
 	python -m bi.plotly.revenue_dashboard
