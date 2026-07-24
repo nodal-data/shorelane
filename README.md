@@ -47,19 +47,38 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
    The seductive wrong answers are documented per-question in `evals/questions.yaml`.
 3. **Build the context.** Run the
    [nodal-context](https://github.com/nodal-data/nodal-context) ~30-minute
-   test-drive interview against the same warehouse. This repo's `dbt/` folder is
-   a ready-made dbt extraction input: fetch the pre-parsed manifest from the
-   demo site into place with
+   test-drive interview against the same warehouse, in this order:
 
-   ```bash
-   make manifest-fetch   # or, without make:
-   mkdir -p dbt/target && curl -sf -o dbt/target/manifest.json \
-     https://nodal-data.github.io/shorelane/dbt/manifest.json
-   ```
+   1. **Get the dbt manifest in place first.** This repo's `dbt/` folder is a
+      ready-made dbt extraction input; put a `manifest.json` in `dbt/target/`
+      by downloading the published one or parsing locally:
 
-   or build it yourself with `make manifest` — `dbt parse` needs no warehouse
-   credentials. (Query-history mining needs project-level permissions, so that
-   input isn't available on the public dataset — expected.)
+      ```bash
+      make manifest-fetch   # download the published manifest (no dbt install), or
+      make manifest         # build it yourself — dbt parse needs no warehouse credentials
+      # without make:
+      mkdir -p dbt/target && curl -sf -o dbt/target/manifest.json \
+        https://nodal-data.github.io/shorelane/dbt/manifest.json
+      ```
+
+   2. **Clone nodal-context next to this repo and start the interview:**
+
+      ```bash
+      git clone https://github.com/nodal-data/nodal-context.git
+      cd nodal-context
+      ```
+
+      Open your agent there (e.g. Claude Code) and say **"take it for a test
+      drive"** — the context-interview skill takes over and writes the context
+      to a sibling `analytics-context/` repo.
+
+   3. **When the interview asks for inputs**, answer with Shorelane's fixtures:
+      - *Company webpage* → <https://nodal-data.github.io/shorelane/>
+      - *dbt project* → this repo's `dbt/` folder (e.g. `../shorelane/dbt/`),
+        with the manifest from step i at `dbt/target/manifest.json`
+
+   (Query-history mining needs project-level permissions, so that input isn't
+   available on the public dataset — expected.)
 4. **Ask again with context loaded** and check the answer against
    `context/ground_truth/`. The correct Q1 2024 canonical answer is below.
 
