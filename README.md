@@ -136,6 +136,22 @@ the binary and credentials are in place.
    the agent to list the tables in `nodal-shorelane.shorelane` — you should see
    `fct_revenue` and the four staging views.
 
+6. **Explore the schema.** Ask your agent (Claude Code, Codex, Gemini, …):
+   *"What tables do you have access to?"* It should report two datasets in
+   `nodal-shorelane`, nine tables in all:
+
+   - `shorelane_raw` — the landing tables, as loaded from Parquet:
+     `app_db__orders`, `app_db__invoices`, `app_db__revenue_recognition`,
+     `stripe__refunds`
+   - `shorelane` — the dbt-built layer: staging views over the raw tables
+     (`stg_orders`, `stg_invoices`, `stg_refunds`,
+     `stg_revenue_recognition`) plus `fct_revenue`
+
+7. **Try the trap.** Ask something like *"What was the revenue in June
+   2026?"* The question is intentionally ambiguous, and without context the
+   agent will likely give a confident wrong answer — which is the point of
+   the fixture.
+
 If auth later starts failing with `invalid_rapt` / `invalid_grant`, your Google
 session expired — rerun `gcloud auth application-default login` and restart the
 MCP server (`/mcp` → reconnect in Claude Code).
