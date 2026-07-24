@@ -67,6 +67,9 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
       cd ..
       git clone https://github.com/nodal-data/nodal-context.git
       cd nodal-context
+      cp ../shorelane/.mcp.json .   # bring the BigQuery MCP config along —
+                                    # .mcp.json is project-scoped, so the agent
+                                    # only picks it up from the directory it runs in
       ```
 
       Open your agent there (e.g. Claude Code) and say **"take it for a test
