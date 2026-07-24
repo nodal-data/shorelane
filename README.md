@@ -18,9 +18,10 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
   (`.github/workflows/pages.yml`):
   [the marketing homepage](https://nodal-data.github.io/shorelane/),
   [an explore-the-data page](https://nodal-data.github.io/shorelane/explore.html),
-  and the [five-revenues dashboard](https://nodal-data.github.io/shorelane/dashboard/),
-  re-rendered daily `--as-of today` so it matches the live warehouse without any
-  credentials in CI.
+  the [five-revenues dashboard](https://nodal-data.github.io/shorelane/dashboard/),
+  and the [executive dashboard](https://nodal-data.github.io/shorelane/business/)
+  (KPIs + five charts across four period views), all re-rendered daily
+  `--as-of today` so they match the live warehouse without any credentials in CI.
 - **Public BigQuery datasets** — `nodal-shorelane.shorelane_raw` (landing tables)
   and `nodal-shorelane.shorelane` (dbt marts incl. `fct_revenue`) are readable by
   any authenticated Google account. Query from your own GCP project; the free

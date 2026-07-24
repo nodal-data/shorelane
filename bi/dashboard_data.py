@@ -130,8 +130,8 @@ def monthly_metrics(tables: dict[str, pd.DataFrame]) -> pd.DataFrame:
     )
 
     df = rev.join([by_month, new_customers, refunds_by_month])
-    df.index.name = "month"
     df = df.reindex(months).fillna(0)
+    df.index.name = "month"  # after reindex — reindex swaps in `months`, whose name is unset
     df["cumulative_customers"] = df["new_customers"].cumsum()
     df["aov"] = (df["gmv"] / df["orders"]).fillna(0)
     # Refunds as a share of GMV (a clean "leakage" rate for the cash-health view).
