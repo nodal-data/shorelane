@@ -8,6 +8,14 @@ Built and maintained by **[Nodal](https://nodaldata.io)** as the public companio
 fixture to **[nodal-context](https://github.com/nodal-data/nodal-context)**, the
 open-source interview-built context layer for analytics agents.
 
+Shorelane is based on **Shorelane Commerce**, the synthetic company Hex built to
+evaluate its data agents — a fake B2B2C office-supplies business whose warehouse
+deliberately plants realistic data debt (migration-era ID loss, an unmerged
+acquisition, renamed channels, and "five columns that could plausibly be called
+revenue"). See Hex's write-up:
+[How we evaluate data agents](https://hex.tech/blog/evaluate-data-agents/). This
+repo is an independent, open reimplementation of that idea as a public fixture.
+
 This repo ships one complete vertical slice: the **five revenues** trap, where a
 plain "what was our revenue?" has five individually-defensible answers and a naive
 agent picks one with false confidence. See `CLAUDE.md` for the full design contract.
@@ -24,15 +32,16 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
   `--as-of today` so they match the live warehouse without any credentials in CI.
 - **Public BigQuery datasets** — `nodal-shorelane.shorelane_raw` (landing tables)
   and `nodal-shorelane.shorelane` (dbt marts incl. `fct_revenue`) are readable by
-  any authenticated Google account. Query from your own GCP project; the free
+  **any Google account, including a personal Gmail** — no invite, no paid plan.
+  You just log in and query from your own (free) GCP project; BigQuery's free
   tier covers this dataset thousands of times over.
 
 ## Try it yourself (the silent-SQL demo)
 
-1. **Connect an agent to the warehouse.** Point a
-   [BigQuery MCP server](https://cloud.google.com/bigquery/docs/pre-built-tools#mcp)
-   at your own GCP project (that's where query billing lands — free tier is
-   plenty) and query the public `nodal-shorelane` datasets.
+1. **Connect an agent to the warehouse** — see
+   [Connect an agent over MCP](#connect-an-agent-over-mcp) below. Any Google
+   account (a personal Gmail works) can read the public `nodal-shorelane`
+   datasets; queries run in your own GCP project, and the free tier is plenty.
 2. **Ask the deceptively easy question.** *"What was revenue in Q1 2024?"* —
    note the confident answer and which of the five measures it silently picked.
    The seductive wrong answers are documented per-question in `evals/questions.yaml`.
@@ -46,6 +55,60 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
    permissions, so that input isn't available on the public dataset — expected.)
 4. **Ask again with context loaded** and check the answer against
    `context/ground_truth/`. The correct Q1 2024 canonical answer is below.
+
+## Connect an agent over MCP
+
+The warehouse connection runs through Google's
+[MCP Toolbox for Databases](https://github.com/googleapis/mcp-toolbox)
+(`toolbox`) and its pre-built BigQuery tool set. This repo ships a
+project-scoped `.mcp.json`, so in Claude Code the connection works as soon as
+the binary and credentials are in place.
+
+1. **Install the `toolbox` binary.**
+
+   ```bash
+   brew install mcp-toolbox
+   ```
+
+   Or grab a release binary from the
+   [releases page](https://github.com/googleapis/mcp-toolbox/releases),
+   `chmod +x` it, and put it on your `PATH` as `toolbox`.
+
+2. **Authenticate to Google Cloud.** Any Google account works — a personal
+   Gmail is fine; you don't need a work account or an invite from us. The
+   toolbox uses Application Default Credentials, so log in with:
+
+   ```bash
+   gcloud auth application-default login
+   ```
+
+3. **Point it at your own GCP project.** Query jobs run in the project named by
+   `BIGQUERY_PROJECT`, and querying is effectively **free**: BigQuery's free
+   tier includes 1 TB of query processing per month — no credit card required —
+   and this dataset is small enough that you'd need thousands of runs to dent
+   it. If you've never used GCP, create a free project at
+   [console.cloud.google.com](https://console.cloud.google.com) (a minute of
+   clicking), then set it in the shell you launch your agent from:
+
+   ```bash
+   export BIGQUERY_PROJECT=your-gcp-project-id
+   ```
+
+   (Nodal team members with `nodal-shorelane` access can skip this — it's the
+   default in `.mcp.json`.)
+
+4. **Start your agent in this repo.** Claude Code picks up `.mcp.json`
+   automatically and asks you to approve the `bigquery` server on first run.
+   For any other MCP client, configure a stdio server with command
+   `toolbox --prebuilt bigquery --stdio` and the `BIGQUERY_PROJECT` env var.
+
+5. **Verify.** `claude mcp list` should show `bigquery: ✔ Connected`; then ask
+   the agent to list the tables in `nodal-shorelane.shorelane` — you should see
+   `fct_revenue` and the four staging views.
+
+If auth later starts failing with `invalid_rapt` / `invalid_grant`, your Google
+session expired — rerun `gcloud auth application-default login` and restart the
+MCP server (`/mcp` → reconnect in Claude Code).
 
 ## Quickstart
 
