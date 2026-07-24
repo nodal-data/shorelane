@@ -156,7 +156,7 @@ If auth later starts failing with `invalid_rapt` / `invalid_grant`, your Google
 session expired — rerun `gcloud auth application-default login` and restart the
 MCP server (`/mcp` → reconnect in Claude Code).
 
-## Quickstart
+## Run it locally
 
 ```bash
 pip install -e .
@@ -182,22 +182,10 @@ If your numbers differ, the seed/economics changed — see "breaking changes" in
 - `dbt/` — staging + `fct_revenue` mart, one model set for both warehouses
 - `context/` — the Nodal layer: metric defs, LookML, personas, derived ground truth
 - `evals/` — questions + grading rubric for the revenue slice
-- `loaders/` — BigQuery (primary, public), Redshift (private second warehouse),
-  Snowflake (stub); `visibility.py` holds the warehouse-neutral arrival rule
-- `bi/` — Looker Studio (free, BQ-native) + Plotly (fully free)
+- `loaders/` — warehouse loaders (BigQuery is the public one); `visibility.py`
+  holds the arrival rule
+- `bi/` — dashboards (Looker Studio + Plotly)
 - `site/` — the explore page for the public GitHub Pages site
 
-## Two warehouses, and why not Looker
-
-BigQuery is primary and public. Redshift Serverless runs the same generators, dbt
-models and parity contract as a full private second warehouse, proving the fixture
-isn't BigQuery-shaped. **Looker (core)** is a $60k+/yr platform we don't run —
-we author its LookML as a *context artifact* and render with free tools. Details in
-`CLAUDE.md`.
-
-## Extend it
-
-The next pieces of planted data debt (identity fragmentation, an unmerged
-acquisition, a channel rename, a subscription restructure, conflicting ad totals)
-are specified in `CLAUDE.md`. Each is built as an eval triple: ground truth +
-documented trap + resolving context artifact. 
+The full design contract — architecture, warehouse policy, and the roadmap of
+planted data debt for extending the fixture — is in `CLAUDE.md`.
