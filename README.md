@@ -64,6 +64,7 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
    2. **Clone nodal-context next to this repo and start the interview:**
 
       ```bash
+      cd ..
       git clone https://github.com/nodal-data/nodal-context.git
       cd nodal-context
       ```
