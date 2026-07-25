@@ -39,7 +39,8 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
 ## Try it yourself (the silent-SQL demo)
 
 1. **Connect an agent to the warehouse** — see
-   [Connect an agent over MCP](#connect-an-agent-over-mcp) below. Any Google
+   [Connect an agent over MCP to the public Nodal Shorelane database](#connect-an-agent-over-mcp-to-the-public-nodal-shorelane-database)
+   below. Any Google
    account (a personal Gmail works) can read the public `nodal-shorelane`
    datasets; queries run in your own GCP project, and the free tier is plenty.
 2. **Ask the deceptively easy question.** *"What was revenue in Q1 2024?"* —
@@ -86,15 +87,26 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
 4. **Ask again with context loaded** and check the answer against
    `context/ground_truth/`. The correct Q1 2024 canonical answer is below.
 
-## Connect an agent over MCP
+## Connect an agent over MCP to the public Nodal Shorelane database
 
 The warehouse connection runs through Google's
 [MCP Toolbox for Databases](https://github.com/googleapis/mcp-toolbox)
-(`toolbox`) and its pre-built BigQuery tool set. This repo ships a
-project-scoped `.mcp.json`, so in Claude Code the connection works as soon as
-the binary and credentials are in place.
+(`toolbox`) and its pre-built BigQuery tool set.
 
-1. **Install the `toolbox` binary.**
+1. **Clone the shorelane repo.**
+
+   ```bash
+   git clone https://github.com/nodal-data/shorelane.git
+   cd shorelane
+   ```
+
+   The repo ships a project-scoped `.mcp.json` with the BigQuery MCP server
+   pre-configured, but it depends on the `toolbox` binary from the next step.
+   Not sure if you're already set up? Start your agent in the repo and run
+   `/mcp` — if `bigquery` shows as connected, you can skip the connection
+   instructions and jump to step 7.
+
+2. **Install the `toolbox` binary.**
 
    ```bash
    brew install mcp-toolbox
@@ -104,7 +116,7 @@ the binary and credentials are in place.
    [releases page](https://github.com/googleapis/mcp-toolbox/releases),
    `chmod +x` it, and put it on your `PATH` as `toolbox`.
 
-2. **Authenticate to Google Cloud.** Any Google account works — a personal
+3. **Authenticate to Google Cloud.** Any Google account works — a personal
    Gmail is fine; you don't need a work account or an invite from us. The
    toolbox uses Application Default Credentials, so log in with:
 
@@ -112,7 +124,7 @@ the binary and credentials are in place.
    gcloud auth application-default login
    ```
 
-3. **Point it at your own GCP project.** Query jobs run in the project named by
+4. **Point it at your own GCP project.** Query jobs run in the project named by
    `BIGQUERY_PROJECT`, and querying is effectively **free**: BigQuery's free
    tier includes 1 TB of query processing per month — no credit card required —
    and this dataset is small enough that you'd need thousands of runs to dent
@@ -127,16 +139,16 @@ the binary and credentials are in place.
    (Nodal team members with `nodal-shorelane` access can skip this — it's the
    default in `.mcp.json`.)
 
-4. **Start your agent in this repo.** Claude Code picks up `.mcp.json`
+5. **Start your agent in this repo.** Claude Code picks up `.mcp.json`
    automatically and asks you to approve the `bigquery` server on first run.
    For any other MCP client, configure a stdio server with command
    `toolbox --prebuilt bigquery --stdio` and the `BIGQUERY_PROJECT` env var.
 
-5. **Verify.** `claude mcp list` should show `bigquery: ✔ Connected`; then ask
+6. **Verify.** `claude mcp list` should show `bigquery: ✔ Connected`; then ask
    the agent to list the tables in `nodal-shorelane.shorelane` — you should see
    `fct_revenue` and the four staging views.
 
-6. **Explore the schema.** Ask your agent (Claude Code, Codex, Gemini, …):
+7. **Explore the schema.** Ask your agent (Claude Code, Codex, Gemini, …):
    *"What tables do you have access to?"* It should report two datasets in
    `nodal-shorelane`, nine tables in all:
 
@@ -147,7 +159,7 @@ the binary and credentials are in place.
      (`stg_orders`, `stg_invoices`, `stg_refunds`,
      `stg_revenue_recognition`) plus `fct_revenue`
 
-7. **Try the trap.** Ask something like *"What was the revenue in June
+8. **Try the trap.** Ask something like *"What was the revenue in June
    2026?"* The question is intentionally ambiguous, and without context the
    agent will likely give a confident wrong answer — which is the point of
    the fixture.
