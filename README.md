@@ -52,12 +52,20 @@ agent picks one with false confidence. See `CLAUDE.md` for the full design contr
 
    1. **Get the dbt manifest in place first.** This repo's `dbt/` folder is a
       ready-made dbt extraction input; put a `manifest.json` in `dbt/target/`
-      by downloading the published one or parsing locally:
+      using **any one** of these:
 
       ```bash
-      make manifest-fetch   # download the published manifest (no dbt install), or
-      make manifest         # build it yourself — dbt parse needs no warehouse credentials
-      # without make:
+      # Option A: download the published manifest (no dbt install)
+      make manifest-fetch
+      ```
+
+      ```bash
+      # Option B: build it yourself — dbt parse needs no warehouse credentials
+      make manifest
+      ```
+
+      ```bash
+      # Option C: no make? download it directly
       mkdir -p dbt/target && curl -sf -o dbt/target/manifest.json \
         https://nodal-data.github.io/shorelane/dbt/manifest.json
       ```
