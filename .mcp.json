@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "bigquery": {
+      "command": "toolbox",
+      "args": ["--prebuilt", "bigquery", "--stdio"],
+      "env": {
+        "BIGQUERY_PROJECT": "${BIGQUERY_PROJECT:-nodal-shorelane}"
+      }
+    }
+  }
+}
